@@ -15,13 +15,13 @@ The topic we have chosen is finding either shortest or simply "short" solutions 
 ## 2. _due 11/3_ Brief project description (what algorithms will you be comparing and on what architectures)
 
 For the project, we will be comparing the following three algorithms:
-- Thistlethwaite's Algorithm (MPI + CUDA)
+1. Thistlethwaite's Algorithm (MPI + CUDA)
 ...Version:
 ...Psuedocode/Description:
-- Kociemba's Algorithm (MPI + CUDA)
+2. Kociemba's Algorithm (MPI + CUDA)
 ...Version:
 ...Psuedocode/Description:
-- Korf's Algorithm (MPI + CUDA)
+3. Korf's Algorithm (MPI + CUDA)
 ...Version:
 ...Psuedocode/Description:
 
