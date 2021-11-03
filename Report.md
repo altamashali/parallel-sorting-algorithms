@@ -14,19 +14,24 @@ The topic we have chosen is finding either shortest or simply "short" solutions 
 
 ## 2. _due 11/3_ Brief project description (what algorithms will you be comparing and on what architectures)
 
-For the project, we will be comparing the following three algorithms:
-1. Thistlethwaite's Algorithm (MPI + CUDA)
-...Version:
-...Psuedocode/Description:
-2. Kociemba's Algorithm (MPI + CUDA)
-...Version:
-...Psuedocode/Description:
-3. Korf's Algorithm (MPI + CUDA)
-...Version:
-...Psuedocode/Description:
+#### For the project, we will be comparing the following three algorithms:
+- Thistlethwaite's Algorithm
+  - Architectures: MPI + CUDA
+  - Version:
+  - Psuedocode/Description:
+- Kociemba's Algorithm
+  - Architectures: MPI + CUDA
+  - Version:
+  - Psuedocode/Description:
+- Korf's Algorithm
+  - Architectures: MPI + CUDA
+  - Version:
+  - Psuedocode/Description:
 
-Communication:
-Our team is using a Discord server to communicate. We have a Google Drive for collaborating on the markdown sheet, and are using GitHub to collaborate on the code.  
+#### Communication:
+* Discord: used for audio/text communication, hosting meetings
+* Google Drive: used to collaborate on technical writing pieces and presentations
+* GitHub: used to collaborate on coding and development  
 
 ## 3. _due 11/12_ Pseudocode for each algorithm and implementation
 
