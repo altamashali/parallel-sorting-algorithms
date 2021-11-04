@@ -10,20 +10,92 @@
 
 ## 2. _due 11/3_ Project topic 
 
-The topic we have chosen is finding either shortest or simply "short" solutions for arbitrary initial states of Rubik's cube. Our code will take the initial configuration of a Rubik's Cube as input, then run three different algorithms (Thistlethwaite's, Kociemba's, Korf's) in parallel to find the most optimal solution.
+For our project, we have decided to sort strings based on their ASCII character values in ascending order. Our plan is to:
+
+1. Take in a string as input and convert the letters to a list of ASCII characters
+2. Run parallelized versions of Batcher’s Bitonic Sort, Counting Sort, and Radix Sort to sort the list 
+3. Convert the sorted lists from ASCII characters back to letters in a string.
+4. Return the sorted string and runtimes of each algorithm to determine which was the most efficient.
 
 ## 2. _due 11/3_ Brief project description (what algorithms will you be comparing and on what architectures)
 
 #### For the project, we will be comparing the following three algorithms:
-- Awerbuch-Shiloach Algorithm
+- Batcher's Bitonic Sort Algorithm
   - Architectures: MPI + CUDA
-  - Psuedocode/Description:
-- Random-mate Algorithm
+  - Description:
+      - This sort algorithm focuses on converting a random sequence of numbers into a bitonic sequence, one that monotonically increases, then decreases. 
+      - Bitonic sort is better suited parallel implementation since elements are compared in predefined sequence and the sequence of comparison doesn’t depend on the data. 
+      - We are to assume that the input is a power of 2. 
+      - If the input size is 1, then you are finished. 
+      - If not, partition the input into two subarrays of size n/2, recursively sort these two subarrays in parallel, then merge the two sorted subarrays.
+      - It has a runtime of O(n log^2 n) and depth O(log^2 n).
+  - Psuedocode:
+```
+function bitonic_sort(a):
+if (#a == 1) then a
+else
+    let
+	bot = subseq(a,0,#a/2);
+	top = subseq(a,#a/2,#a);
+	mins = {min(bot,top):bot;top};
+	maxs = {max(bot,top):bot;top};
+    in flatten({bitonic_sort(x) : x in [mins,maxs]});
+
+function batcher_sort(a):
+if (#a == 1) then a
+else
+    let b = {batcher_sort(x) : x in bottop(a)};
+    in bitonic_sort(b[0]++reverse(b[1]));
+```
+- Counting Sort Algorithm
   - Architectures: MPI + CUDA
-  - Psuedocode/Description:
-- Hybrid Algorithm
+  - Description: 
+      - The counting sort algorithm is a linear sorting technique which is based upon keys within a specified range.
+  - Psuedocode:
+```
+counting_sort(a):
+   for i = 0 to k do
+      c[i] = 0
+   for j = 0 to n do
+      c[A[j]] = c[A[j]] + 1
+
+   for i = 1 to k do
+      c[i] = c[i] + c[i-1]
+
+  for j = n-1 decrement to 0 do
+     B[ c[A[j]]-1 ] = A[j]
+     c[A[j]] = c[A[j]] - 1
+```
+- Radix Sort Algorithm
   - Architectures: MPI + CUDA
-  - Psuedocode/Description:
+  - Description:
+      - The radix sort algorithm is a non-comparative sorting algorithm.
+      - This is a multiple pass distribution sort algorithm that distributes each item to a bucket according to part of the items key beginning with the least significant part of the key.
+    - The runtime of radix sort is O(d*(n+b)) where b is the base which represents the numbers. 
+    - Advantages of the radix sort algorithm are that it is fast when the range of the array elements are less.
+    - Some disadvantages of radix sort are that it depends on digits or letters, also radix sort is much less flexible then the other sorting algorithms. For example, it takes more space compared to quicksort which is inplace sorting.
+  - Psuedocode:
+```
+void radixSort(int A[], int n)
+{   int i,digitPlace = 1;
+    int result[n];
+    int largestNum = getMax(A, n);
+    while(largestNum/digitPlace >0){
+        int count[10] = {0};
+        for (i = 0; i < n; i++)
+            count[ (A[i]/digitPlace)%10 ]++;
+        for (i = 1; i < 10; i++)
+            count[i] += count[i - 1];
+        for (i = n - 1; i >= 0; i--)
+        {   result[count[ (A[i]/digitPlace)%10 ] - 1] = A[i];
+            count[ (A[i]/digitPlace)%10 ]--;
+        }
+        for (i = 0; i < n; i++)
+            A[i] = result[i];
+            digitPlace *= 10;
+    }
+}
+```
 
 #### Communication:
 * Discord: used for audio/text communication, hosting meetings
