@@ -15,17 +15,14 @@ The topic we have chosen is finding either shortest or simply "short" solutions 
 ## 2. _due 11/3_ Brief project description (what algorithms will you be comparing and on what architectures)
 
 #### For the project, we will be comparing the following three algorithms:
-- Thistlethwaite's Algorithm
+- Awerbuch-Shiloach Algorithm
   - Architectures: MPI + CUDA
-  - Version:
   - Psuedocode/Description:
-- Kociemba's Algorithm
+- Random-mate Algorithm
   - Architectures: MPI + CUDA
-  - Version:
   - Psuedocode/Description:
-- Korf's Algorithm
+- Hybrid Algorithm
   - Architectures: MPI + CUDA
-  - Version:
   - Psuedocode/Description:
 
 #### Communication:
