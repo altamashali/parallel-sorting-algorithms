@@ -1,176 +1,273 @@
-#include<iostream>
-#include<stdio.h>
-using namespace std;
-__device__ int function(int value , int bit ,int bitset)
-{
-    if(bitset == 1 )
-    {
-        if((value & bit)  != 0)
-        {
-            return 1;
-        }
-        else 
-            return 0;
-    }
-    else
-    {
-        if((value & bit) == 0)
-        {
-            return 1;
-        }
-        else 
-        {
-            return 0;
-        }
-    }
-}
-__global__ void predicateDevice(int *d_array , int *d_predicateArrry , int d_numberOfElements,int bit,int bitset)
-{
-    int index = threadIdx.x + blockIdx.x*blockDim.x;
-    if(index < d_numberOfElements)
-    {
-    
-           d_predicateArrry[index] = function(d_array[index],bit,bitset);
+#include <stdio.h>
+
+#include <time.h>
+#include <stdlib.h>
+
+#define SIZE 8192
+#define THREADSIZE 64
+#define BLOCKSIZE ((SIZE-1)/THREADSIZE + 1) 
+#define RADIX 10
+
+__global__ void copyKernel(int * inArray, int * semiSortArray, int arrayLength){
+
+    int index   = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(index < arrayLength){
+        inArray[index]      = semiSortArray[index];
     }
 }
 
-__global__ void scatter(int *d_array , int *d_scanArray , int *d_predicateArrry,int * d_scatteredArray ,int d_numberOfElements,int offset)
-{
-    int index = threadIdx.x + blockIdx.x * blockDim.x;
-    if(index < d_numberOfElements)
-    {
-        if(d_predicateArrry[index] == 1)
-        {
-            d_scatteredArray[d_scanArray[index] - 1 +offset ] = d_array[index];
-        
+__global__ void histogramKernel(int * inArray, int * outArray, int * radixArray, int arrayLength, int significantDigit){
+
+    __shared__ int inArrayShared[THREADSIZE];
+    __shared__ int outArrayShared[RADIX];
+    __shared__ int radixArrayShared[THREADSIZE];
+
+    int index   = blockIdx.x * blockDim.x + threadIdx.x;
+    int thread  = threadIdx.x;
+    int blockIndex  = blockIdx.x * RADIX;
+
+    int radix;
+    int arrayElement;
+    int i;
+
+    if(thread ==  0){
+        for(i =0; i < RADIX; i ++){
+            outArrayShared[i]       = 0;
+        }
+    }
+
+    if(index < arrayLength){
+        inArrayShared[thread]       = inArray[index];
+    }
+
+    __syncthreads();
+
+    if(index < arrayLength)
+    {   
+        arrayElement            = inArrayShared[thread];
+        radix               = ((arrayElement/significantDigit) % 10);
+        radixArrayShared[thread]    = radix;
+
+        atomicAdd(&outArrayShared[radix], 1);
+    }
+
+    if(index < arrayLength){
+        radixArray[index]       = radixArrayShared[thread];
+    }
+
+    if(thread == 0){
+        for(i =0; i < RADIX; i ++){
+            outArray[blockIndex + i]        = outArrayShared[i];
         }
     }
 }
-__global__ void ScanDevice(int *d_array , int numberOfElements, int *d_tmpArray,int moveIndex)
-{
-    int index = threadIdx.x + blockDim.x * blockIdx.x;
-    if(index > numberOfElements)
-    {
-        return;
-    }
-    d_tmpArray[index] = d_array[index];
-    if(index - moveIndex >=0)
-    {
-        
-        d_tmpArray[index] = d_tmpArray[index] +d_array[index - moveIndex];
-    }
-}
-int* ScanHost(int *d_scanArray,int numberOfElements)
-{
-    
-    
-    int *d_tmpArray;
-    int *d_tmpArray1;
-    cudaMalloc(&d_tmpArray1,sizeof(int)*numberOfElements);
-    cudaMalloc(&d_tmpArray,sizeof(int)*numberOfElements);
-    cudaMemcpy(d_tmpArray1,d_scanArray,sizeof(int)*numberOfElements,cudaMemcpyDeviceToDevice);
-    int j,k=0;
-    for(j=1;j<numberOfElements;j= j*2,k++)
-    {
-        if(k%2 == 0)
-        {
-            ScanDevice<<<1600,500>>>(d_tmpArray1,numberOfElements,d_tmpArray, j);
-            cudaDeviceSynchronize();
-        }
-        else
-        {
-            ScanDevice<<<1600,500>>>(d_tmpArray,numberOfElements,d_tmpArray1, j);
-            cudaDeviceSynchronize();
-        }
+
+__global__ void combineBucket(int * blockBucketArray, int * bucketArray){
+
+    __shared__ int bucketArrayShared[RADIX];
+
+    int index   = blockIdx.x * blockDim.x + threadIdx.x;
+
+    int i;
+
+    bucketArrayShared[index]    = 0;
+
+    for(i = index; i < RADIX*BLOCKSIZE; i=i+RADIX){
+        atomicAdd(&bucketArrayShared[index], blockBucketArray[i]);      
     } 
-    cudaDeviceSynchronize();
-    if(k%2 == 0)
-    {
-        
-        return d_tmpArray1;
-    }
-    else
-    {
-        return d_tmpArray;
-    }
+
+    bucketArray[index]      = bucketArrayShared[index];
 }
-__global__ void print(int *d_predicateArrry,int numberOfElements)
-{
-    
-    for(int i=0;i<numberOfElements;i++)
-    {
-        printf("index = %d value = %d\n",i,d_predicateArrry[i]);
+
+
+__global__ void indexArrayKernel(int * radixArray,  int * bucketArray, int * indexArray, int arrayLength, int significantDigit){
+
+    int index   = blockIdx.x * blockDim.x + threadIdx.x;
+
+    int i;
+    int radix;
+    int pocket;
+
+    if(index < RADIX){
+
+        for(i = 0; i < arrayLength; i++){
+
+            radix           = radixArray[arrayLength -i -1];
+            if(radix == index){
+                pocket              = --bucketArray[radix];
+                indexArray[arrayLength -i -1]   = pocket;       
+            }
+        }
     }
 }
 
-int *compact(int *d_array,int numberOfElements,int bit)
-{   
-    int offset;
-    int *d_predicateArrry;
-    cudaMalloc((void**)&d_predicateArrry,sizeof(int)*numberOfElements);
-    predicateDevice<<<1600,500>>>(d_array,d_predicateArrry,numberOfElements,bit,0);
-    int *d_scanArray;
-    d_scanArray = ScanHost(d_predicateArrry,numberOfElements);
-    int *d_scatteredArray;
-    cudaMalloc((void**)&d_scatteredArray,sizeof(int)*numberOfElements);
-    //cout<<"offset = "<<offset<<"\n";
-    scatter<<<1600,500>>>(d_array,d_scanArray,d_predicateArrry,d_scatteredArray, numberOfElements,0);
-    cudaMemcpy(&offset,d_scanArray+numberOfElements-1,sizeof(int),cudaMemcpyDeviceToHost);
-    predicateDevice<<<1600,500>>>(d_array,d_predicateArrry,numberOfElements,bit,1);
-    d_scanArray = ScanHost(d_predicateArrry,numberOfElements);
-    scatter<<<1600,500>>>(d_array,d_scanArray,d_predicateArrry,d_scatteredArray, numberOfElements,offset);
-    return d_scatteredArray;
-}
-int offset;
-int *positivenegativesplit(int *d_array,int numberOfElements,int bit,int bitset)
-{   
-    int *d_predicateArrry;
-    cudaMalloc((void**)&d_predicateArrry,sizeof(int)*numberOfElements);
-    predicateDevice<<<1600,500>>>(d_array,d_predicateArrry,numberOfElements,bit,bitset);
-    int *d_scanArray;
-    d_scanArray = ScanHost(d_predicateArrry,numberOfElements);
-    int *d_scatteredArray;
-    cudaMemcpy(&offset,d_scanArray+numberOfElements-1,sizeof(int),cudaMemcpyDeviceToHost);
-    cudaMalloc((void**)&d_scatteredArray,sizeof(int)*offset);
-    scatter<<<1600,500>>>(d_array,d_scanArray,d_predicateArrry,d_scatteredArray, numberOfElements,0);
-    return d_scatteredArray;
-}
-int * radixSort(int *d_array , int numberOfElements)
-{
-    int bit;
-    int *d_negativeArray = positivenegativesplit(d_array,numberOfElements,1L<<31,1);
-    for(int i=0;i<sizeof(int)*8;i++)
-    {
-        bit = 1<<i;
-        d_negativeArray = compact(d_negativeArray,offset,bit);
+__global__ void semiSortKernel(int * inArray, int * outArray, int* indexArray, int arrayLength, int significantDigit){
+
+    int index   = blockIdx.x * blockDim.x + threadIdx.x;
+
+    int arrayElement;
+    int arrayIndex;
+
+    if(index < arrayLength){
+        arrayElement            = inArray[index];
+        arrayIndex          = indexArray[index];
+        outArray[arrayIndex]        = arrayElement;
     }
-    int *d_postiveArray = positivenegativesplit(d_array,numberOfElements,1L<<31,0);
-    for(int i=0;i<sizeof(int)*8;i++)
-    {
-        bit = 1<<i;
-        d_postiveArray = compact(d_postiveArray,offset,bit);
-    }
-    cudaMemcpy(d_array,d_negativeArray,sizeof(int)*(numberOfElements-offset),cudaMemcpyDeviceToDevice);
-    cudaMemcpy(d_array+(numberOfElements-offset),d_postiveArray,sizeof(int)*offset,cudaMemcpyDeviceToDevice);
-    return d_array;
+
+
+
 }
-int main()
-{
-    cout<<"enter the number of elements \n";
-    int numberOfElements;
-    cin>>numberOfElements;
-    int *h_array  = new int[numberOfElements];
-    for(int i=0;i<numberOfElements;i++)
-    {
-        cin>>h_array[i];
-    }
-    int *d_array;
-    cudaMalloc((void**)&d_array ,sizeof(int)*numberOfElements);
-    cudaMemcpy(d_array,h_array,sizeof(int)*numberOfElements,cudaMemcpyHostToDevice);
-    d_array = radixSort(d_array, numberOfElements);
-    cudaMemcpy(h_array,d_array,sizeof(int)*numberOfElements,cudaMemcpyDeviceToHost);
-    for(int i=0;i<numberOfElements;i++)
-    {
-        cout<<h_array[i]<<"\n";
-    }
+
+void printArray(int * array, int size){
+    int i;
+    printf("[ ");
+    for (i = 0; i < size; i++)
+        printf("%d ", array[i]);
+    printf("]\n");
 }
+
+int findLargestNum(int * array, int size){
+    int i;
+    int largestNum = -1;
+    for(i = 0; i < size; i++){
+        if(array[i] > largestNum)
+            largestNum = array[i];
+    }
+    return largestNum;
+}
+
+
+void cudaScanThrust(int* inarray, int arr_length, int* resultarray) {
+
+        int length = arr_length;
+
+    thrust::device_ptr<int> d_input = thrust::device_malloc<int>(length);
+        thrust::device_ptr<int> d_output = thrust::device_malloc<int>(length);
+
+        cudaMemcpy(d_input.get(), inarray, length * sizeof(int), cudaMemcpyHostToDevice);
+
+        thrust::inclusive_scan(d_input, d_input + length, d_output);
+
+        cudaThreadSynchronize();
+
+        cudaMemcpy(resultarray, d_output.get(), length * sizeof(int), cudaMemcpyDeviceToHost);
+
+        thrust::device_free(d_input);
+        thrust::device_free(d_output);
+}
+
+void radixSort(int * array, int size){
+
+    double startTime;
+    double endTime;
+    double duration;
+
+    int significantDigit    = 1;
+
+    int threadCount;
+    int blockCount;
+
+    threadCount             = THREADSIZE;
+    blockCount          = BLOCKSIZE;;
+
+    int * outputArray;
+    int * inputArray;
+    int * radixArray;
+    int * bucketArray;
+    int * indexArray;
+    int * semiSortArray;
+    int * blockBucketArray;
+
+    cudaMalloc((void **)& inputArray, sizeof(int)*size);
+    cudaMalloc((void **)& indexArray, sizeof(int)*size);
+    cudaMalloc((void **)& radixArray, sizeof(int)*size);
+    cudaMalloc((void **)& outputArray, sizeof(int)*size);
+    cudaMalloc((void **)& semiSortArray, sizeof(int)*size);
+    cudaMalloc((void **)& bucketArray, sizeof(int)*RADIX);
+    cudaMalloc((void **)& blockBucketArray, sizeof(int)*RADIX*BLOCKSIZE);   
+
+
+    cudaMemcpy(inputArray, array, sizeof(int)*size, cudaMemcpyHostToDevice);
+
+    int largestNum;
+    thrust::device_ptr<int>d_in     = thrust::device_pointer_cast(inputArray);
+    thrust::device_ptr<int>d_out;
+    d_out = thrust::max_element(d_in, d_in + size);
+    largestNum      = *d_out;   
+    printf("\tLargestNumThrust : %d\n", largestNum);
+
+    startTime   = CycleTimer::currentSeconds(); 
+
+    while (largestNum / significantDigit > 0){
+
+        int bucket[RADIX] = { 0 };
+        cudaMemcpy(bucketArray, bucket, sizeof(int)*RADIX, cudaMemcpyHostToDevice);
+
+        histogramKernel<<<blockCount, threadCount>>>(inputArray, blockBucketArray, radixArray, size, significantDigit);     
+        cudaThreadSynchronize();
+
+        combineBucket<<<1, RADIX>>>(blockBucketArray,bucketArray);
+        cudaThreadSynchronize();            
+
+        cudaScanThrust(bucketArray, RADIX, bucketArray);    
+        cudaThreadSynchronize();
+
+        indexArrayKernel<<<blockCount, threadCount>>>(radixArray, bucketArray, indexArray, size, significantDigit);
+        cudaThreadSynchronize();
+
+        semiSortKernel<<<blockCount, threadCount>>>(inputArray, semiSortArray, indexArray, size, significantDigit);
+        cudaThreadSynchronize();
+
+        copyKernel<<<blockCount, threadCount>>>(inputArray, semiSortArray, size);
+        cudaThreadSynchronize();
+
+
+        significantDigit *= RADIX;
+
+    }
+
+    endTime     = CycleTimer::currentSeconds();
+    duration    = endTime - startTime;
+
+    cudaMemcpy(array, semiSortArray, sizeof(int)*size, cudaMemcpyDeviceToHost);
+
+    printf("Duration : %.3f ms\n", 1000.f * duration);
+
+    cudaFree(inputArray);
+    cudaFree(indexArray);
+    cudaFree(radixArray);
+    cudaFree(bucketArray);
+    cudaFree(blockBucketArray);
+    cudaFree(outputArray);
+    cudaFree(semiSortArray);
+}
+
+int main(){
+
+    printf("\n\nRunning Radix Sort Example in C!\n");
+    printf("----------------------------------\n");
+
+    int size = SIZE;
+    int* array;
+    int i;
+    int list;
+
+    srand(time(NULL));
+
+    for(i =0; i < size; i++){
+        list[i]     = SIZE -i;
+    }
+
+    array = &list[0];
+    printf("\nUnsorted List: ");
+    printArray(array, size);
+
+    radixSort(array, size);
+
+    printf("\nSorted List:");
+    printArray(array, size);
+
+    printf("\n");
+
+    return 0;
