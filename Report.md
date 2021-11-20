@@ -47,25 +47,31 @@ batcher_sort(n):
 	    let b = {batcher_sort(x) : x in bottop(n)};
 	    in bitonic_sort(b[0]++reverse(b[1]));
 ```
-- Counting Sort Algorithm
+- Quick Sort Algorithm
   - Architectures: MPI + CUDA
   - Description: 
-	- The counting sort algorithm is a linear sorting technique which is based upon keys within a specified range.
-	- The runtime is always O(n+k) since no matter how many times elements are put into the array the algorithm will always run n + k times.
-	- An advantage if this is that it isn’t a comparison based algorithm so the values being sorted will not affect the functionality of the algorithm other than potentially increasing runtime.
-	- A disadvantage of this approach is that for large integers an array the size of the integer will be created thus increasing runtime.
+	- Quicksort is a divide and conquer algorithm which will pick a pivot element and will partition the input array around the chosen pivot element.
+	- The partitioning given an input array and pivot element you sort the pivot element to the correct position in the sorted array and then
+	- The runtime is typically O(nlogn) when the pivot for each recursive call is equal to the median element of the subarray. This is because the problem size is being halved for each subarray so they can be sorted with log n nested calls.
+	- An advantage of this approach is that it has a short inner loop and it requires only nlogn time to sort for n items.
+	- A disadvantage of this approach is that in its worst case implementation it can have a runtime of O(n^2).
   - Psuedocode:
 ```
-counting_sort(a):
-   Max <- largest element in array
-   Count array <- init with all zero
-   For j = 0 to size
-      Find total count of each unique element and store count at j index on count array
-   For i = 1 to max
-      Find the total sum and store within count array
-   For j = size to 1
-      Reconstruct array with elements
-      Decrease the count of each element that was reconstructed by 1
+parallel_quicksort(arr, len, comm):
+  if num_processor = 1 then
+      return
+  Find mean value of all processors in group communication and set to Pivot
+  Cast calculated pivot from root processor
+  Split local subarray by pivot with one half less than the pivot and one half greater
+  if (rank < num_processor / 2)
+      Send greater half of subarry to processor with rank of rank + proc/2
+      Receive lesser half of subarray from processor with rank of rank + proc/2
+  else
+      Seceive greater half of subarray from processor with rank of rank - proc/2
+      Send lesser half of subarry to processor with rank of rank - proc/2
+  Merge received array with retained array
+  Split communication into two halves
+  Call parallel_quicksort recursively
 ```
 - Radix Sort Algorithm
   - Architectures: MPI + CUDA
@@ -102,12 +108,24 @@ radixSort(int A[], int n):
 
 ## 3. _due 11/12_ Pseudocode for each algorithm and implementation
 
+The Pseudocode for all three of the algorithms with their MPI implementations is added to GitHub. We used C/C++ for the implementations. We used GitHub as our primary resource for figuring out how to make the implementations. 
+- See section 2 for pseudocode of Bitonic sort, Radix sort, and Quicksort. 
+- See *bitonicSort.cpp*, *radixSort.c*, *quickSort.c* for the MPI implementations of chosen algorithms.
+
 ## 3. _due 11/12_ Evaluation plan - what and how will you measure and compare
 
-For example:
-- Effective use of a GPU (play with problem size and number of threads)
-- Strong scaling to more nodes (same problem size, increase number of processors)
-- Weak scaling (increase problem size, increase number of processors)
+For all three of the sorting algorithms (Bitonic, Radix, Quick) we plan to measure the following:
+- Effective use of GPU:
+	- Input Size: 1k, 10k, 100k, 500k, 1m
+	- Threads: 2, 4, 8, 16, 32, 64, 128
+- Strong scaling to more nodes:
+	- Input Size: 100k
+	- Processes: 2, 4, 8, 16, 32, 64
+- Weak scaling:
+	- Input Size: 1k, 10k, 100k, 500k, 1m
+	- Processes: 2, 4, 8, 16, 32, 64
+
+We will be implementing Strong & Weak Scaling using MPI on the Grace Cluster. We will also compare weak scaling (# of processors) and the effective use of the GPU (# of threads) using the same input sizes to see if performance improves with in-node support.
 
 ## 4. _due 11/19_ Performance evaluation
 
