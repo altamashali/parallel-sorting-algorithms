@@ -145,7 +145,51 @@ Important Note: For strong and weak scaling, we’re only showing the comparison
 
 Solid lines represent bitonic sort, dashed lines represent radix sort and dotted lines represent quick sort. As expected, when the input size is 100,000,000, the time taken to run is the longest. We were also able to confirm that sorted inputs take the shortest time, reverse inputs are average and random takes the longest. Ultimately, most of the algorithms seem to be equivalent in regards to how quickly they sort the inputs. 
 
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image10.png?raw=true)
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image5.png?raw=true)
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image2.png?raw=true)
+
+### Strong Scaling:
+
+Blue lines represent bitonic sort, red lines represent radix sort, and yellow lines represent quick sort. The input size used was 10 million and the number of processors was increased for each of the runs for each sort. Increasing the number of processors for bitonic generally decreases the runtime. Radix sort also decreases until it reaches the point of diminishing returns at 16 processors at which the time will no longer decrease. Quicksort for sorted and random input experiences a sharp increase in runtime from 16 to 32 cores for sorted and random inputs. It then declines when the count is increased to 64. For reversed input, quicksort declines normally as the number of processors increases. All of the algorithms reached points of diminishing returns eventually and we can see that they are about equivalent according to runtime.
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image7.png?raw=true)
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image6.png?raw=true)
+
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image1.png?raw=true)
+
+### GPU:
+
+Below are the plots for the total time vs # of threads for each of the different input sizes for all 3 of the sorting algorithms. We have a total of 9 graphs. Overall all the sorts look as if they were behaving in the correct manner. There were some small areas where one can spot outliers but overall the behavior of the sorting algorithms look correct.
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image4.png?raw=true)
+
+In the plot above we can see that for the random and reversed inputs the time it took for each of the threads was nearly the same. For the sorted input however we can see that towards the largest threads the time it takes increased.
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image3.png?raw=true)
+
+In the plot above we can see that for both sorted and reversed inputs the graph decreases linearly at the start then levels out towards the end. The randomized inputs also decrease in the beginning however then become linearly increasing till the end.
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image9.png?raw=true)
+
+In the plot above we can see that for the sorted and reversed inputs the trend is the same as the line goes from decreasing to to steadily increasing. For the random inputs the trend is flat as all the values are about the same throughout.
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image11.png?raw=true)
+
+In the plot above we can see that for all three of the inputs sorted, random, and reversed the trend is the same. The trend shows that the values of the total time is fairly constant until the end of the threads.
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image12.png?raw=true)
+
+In the plot above we can see that for the random and sorted trends the time taken is around the same range and the same trend where at first the line decreases then increases. Compared to this the reversed input is steadily decreasing.
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image8.png?raw=true)
+
+In the plot above we can see that for the inputs sorted and reversed the trend is similar. They both start with a large decreasing slope and then to a small decreasing slope. The random input has a decreasing slope to start but then it levels out until the end of the threads.
+
+Important Note: For the quicksort algorithm we are still running tests and will add them as we get results.
 
 ## 5. _due 12/1_ Presentation, 5 min + questions
 
