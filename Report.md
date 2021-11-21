@@ -116,24 +116,36 @@ The Pseudocode for all three of the algorithms with their MPI implementations is
 
 For all three of the sorting algorithms (Bitonic, Radix, Quick) we plan to measure the following:
 - Effective use of GPU:
-	- Input Size: 1k, 10k, 100k, 500k, 1m
-	- Threads: 2, 4, 8, 16, 32, 64, 128
+	- Input Size: 2^16, 2^20, 2^24
+	- Threads: 64, 128, 512, 1024
 - Strong scaling to more nodes:
-	- Input Size: 100k
+	- Input Size: 10m
 	- Processes: 2, 4, 8, 16, 32, 64
 - Weak scaling:
-	- Input Size: 1k, 10k, 100k, 500k, 1m
+	- Input Size: 1m, 10m, 100m
 	- Processes: 2, 4, 8, 16, 32, 64
 
 We will be implementing Strong & Weak Scaling using MPI on the Grace Cluster. We will also compare weak scaling (# of processors) and the effective use of the GPU (# of threads) using the same input sizes to see if performance improves with in-node support.
 
 ## 4. _due 11/19_ Performance evaluation
 
-Include detailed analysis of computation performance, communication performance.
+CPU Resources:
+- Request 16 node
+- Request 4 tasks/cores per node
+- Request 8GB memory per node
 
-Include figures and explanation of your analysis.
+GPU Resources:
+- Requesting 4 tasks/cores per node
+- Request 8GB memory per node 
+- Request 1 GPU per node
 
-![alt text](image.jpg)
+Important Note: For strong and weak scaling, we’re only showing the comparison with computation time for right now. Once we finish collecting our communication time, we will have the data for total and communication. Our GPU data includes total, computation, and communication time. 
+
+### Weak Scaling:
+
+Solid lines represent bitonic sort, dashed lines represent radix sort and dotted lines represent quick sort. As expected, when the input size is 100,000,000, the time taken to run is the longest. We were also able to confirm that sorted inputs take the shortest time, reverse inputs are average and random takes the longest. Ultimately, most of the algorithms seem to be equivalent in regards to how quickly they sort the inputs. 
+
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/image1.png?raw=true)
 
 ## 5. _due 12/1_ Presentation, 5 min + questions
 
