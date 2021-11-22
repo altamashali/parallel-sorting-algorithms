@@ -130,14 +130,14 @@ We will be implementing Strong & Weak Scaling using MPI on the Grace Cluster. We
 ## 4. _due 11/19_ Performance evaluation
 
 CPU Resources:
-- Request 16 node
-- Request 4 tasks/cores per node
-- Request 8GB memory per node
+- Requested 16 nodes
+- Assigned 4 tasks/cores per node
+- Requested 8GB memory per node
 
 GPU Resources:
-- Requesting 4 tasks/cores per node
-- Request 8GB memory per node 
-- Request 1 GPU per node
+- Requested 1 GPU per node
+- Assigned 4 tasks/cores per node
+- Requested 8GB memory per node 
 
 Important Note: For strong and weak scaling, we’re only showing the comparison with computation time for right now. Once we finish collecting our communication time, we will have the data for total and communication. Our GPU data includes total, computation, and communication time. 
 
