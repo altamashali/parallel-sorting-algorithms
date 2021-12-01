@@ -4,6 +4,8 @@
 #include <math.h>
 #include <time.h>
 
+double proc_times[2];
+double proc_sumtimes[2];
 
 // copies d1 array to d2
 void copyArray(double *d1, double *d2, int start, int length) {
@@ -112,13 +114,19 @@ void quick_sort(double *data, int length, MPI_Comm comm, int *last_length){
 
   if (rank < num_processors / 2) {
     // Send elementa greater than pivot to left processor
-    MPI_Send(data + (pivot_idx + 1), (length - 1) - pivot_idx, MPI_DOUBLE, rank + num_processors / 2, 00, comm);
+
+    proc_times[0] = MPI_Wtime();
+    MPI_Send(data + (pivot_idx + 1), (length - 1) - pivot_idx, MPI_DOUBLE, rank + num_processors / 2, 00, comm);      
+    proc_times[0] = MPI_Wtime() - proc_times[0];
 
     // Recieve elements lower than pivot from right processor
     MPI_Probe(rank + num_processors / 2, 11, comm, &status);
     MPI_Get_count(&status, MPI_DOUBLE, &element_amount);
     data_recieve = (double *)malloc(element_amount*sizeof(double));
+
+    proc_times[1] = MPI_Wtime();
     MPI_Recv(data_recieve, element_amount, MPI_DOUBLE, rank + num_processors / 2, 11, comm, MPI_STATUS_IGNORE);
+    proc_times[1] = MPI_Wtime() - proc_times[1];
   } else {
 
     // Recieve elem higher than pivot from left hand side processor 
@@ -126,11 +134,15 @@ void quick_sort(double *data, int length, MPI_Comm comm, int *last_length){
     MPI_Get_count(&status, MPI_DOUBLE, &element_amount);
 
     data_recieve = (double *)malloc(element_amount*sizeof(double));
-
+    
+    proc_times[1] = MPI_Wtime();
     MPI_Recv(data_recieve, element_amount, MPI_DOUBLE, rank - num_processors / 2, 00, comm, MPI_STATUS_IGNORE);
-
+    proc_times[1] = MPI_Wtime() - proc_times[1];
+    
     // Send elem lower than pivot from right hand side processor
+    proc_times[0] = MPI_Wtime();
     MPI_Send(data, pivot_idx + 1, MPI_DOUBLE, rank - num_processors / 2, 11, comm); 
+    proc_times[0] = MPI_Wtime() - proc_times[0];
   }
 
   // Create new array data to be kept, and to be merged with data recieved
@@ -212,6 +224,10 @@ int main(int argc, char *argv[]) {
  
  /* Gather all sub vectors into one large sorted vector  */
   MPI_Gatherv(data_sub, elements_per_proc, MPI_DOUBLE, data_sorted, recieve_counts, receive_displacements, MPI_DOUBLE, root, MPI_COMM_WORLD);
+
+  MPI_Reduce(&proc_times, &proc_sumtimes, 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD); //sum -> average    
+  double receive_avg, send_avg;
+  double avg_num_proc = numtasks-1;
   
   /* End time and free datatypes */
   if (rank == 0) {
@@ -221,6 +237,14 @@ int main(int argc, char *argv[]) {
     if (!is_sorted(data_sorted, n)) {
        printf("Error not sorted \n");
     }
+
+    receive_avg = proc_sumtimes[0]/avg_num_proc;
+    send_avg = proc_sumtimes[1]/avg_num_proc;
+
+    printf("Receiving: \n");
+    printf("Min: %lf  Max: %lf  Avg:  %lf\n", proc_mintimes[0], proc_maxtimes[0], receive_avg);
+    printf("Sending: \n");
+    printf("Min: %lf  Max: %lf  Avg:  %lf\n", proc_mintimes[1], proc_maxtimes[1], send_avg);
   }
 
   free(last_length);
