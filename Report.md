@@ -160,13 +160,13 @@ Solid lines represent bitonic sort, dashed lines represent radix sort and dotted
 Blue lines represent bitonic sort, red lines represent radix sort, and yellow lines represent quick sort. The input size used was 10 million and the number of processors was increased for each of the runs for each sort. Increasing the number of processors for bitonic generally decreases the runtime. Radix sort also decreases until it reaches the point of diminishing returns at 16 processors at which the time will no longer decrease. Quicksort for sorted and random input experiences a sharp increase in runtime from 16 to 32 cores for sorted and random inputs. It then declines when the count is increased to 64. For reversed input, quicksort declines normally as the number of processors increases. All of the algorithms reached points of diminishing returns eventually and we can see that they are about equivalent according to runtime.
 
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-comm-random.png?raw=true)
-![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-comm-reverse.png?raw=true)
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-comm-reversed.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-comm-sorted.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-comp-random.png?raw=true)
-![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-comp-reverse.png?raw=true)
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-comp-reversed.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-comp-sorted.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-total-random.png?raw=true)
-![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-total-reverse.png?raw=true)
+![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-total-reversed.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-total-sorted.png?raw=true)
 
 ### GPU:
