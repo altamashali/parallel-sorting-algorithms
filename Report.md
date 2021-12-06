@@ -113,12 +113,10 @@ For all three of the sorting algorithms (Bitonic, Radix, Quick) we plan to measu
 	- Processes: 2, 4, 8, 16, 32, 64
 
 We planned to implement Strong & Weak Scaling using MPI on the Grace Cluster. We also planned to compare weak scaling (# of processors) and the effective use of the GPU (# of threads) using the same input sizes to see if performance improves with in-node support. The following resources were requested when running our code on Grace Cluster: 
-
 - CPU Resources:
 	- Requested 16 nodes
 	- Assigned 4 tasks/cores per node
 	- Requested 8GB memory per node
-
 - GPU Resources:
 	- Requested 1 GPU per node
 	- Assigned 4 tasks/cores per node
@@ -182,4 +180,5 @@ Quicksort was not efficient, as it was unable to handle large input sizes. This 
 ## Final Deliverables
 
 [Link to Presentation](https://docs.google.com/presentation/d/1fNbkdVu2Ie0tsaBjLZ3Rz6JXMZGCsNaxGDqnb1Kosuk/edit?usp=sharing)
+
 [Link to Report](https://docs.google.com/document/d/10iN08tt-xM4xwN7D1FSMKx9e05i9fdwhPVykCVvH6iA/edit?usp=sharing)
