@@ -1,4 +1,4 @@
-# ParallelComputing CSCE 435 Group project
+# Parallel Computing CSCE 435 Group Project
 
 ## Group members:
 1. Altamash Ali
