@@ -143,7 +143,7 @@ Important Note: For strong and weak scaling, we’re only showing the comparison
 
 ### Weak Scaling:
 
-Solid lines represent bitonic sort, dashed lines represent radix sort and dotted lines represent quick sort. As expected, when the input size is 100,000,000, the time taken to run is the longest. We were also able to confirm that sorted inputs take the shortest time, reverse inputs are average and random takes the longest. Ultimately, most of the algorithms seem to be equivalent in regards to how quickly they sort the inputs. 
+For weak scaling, each graph is based on the runtime being compared and the input type. The graphs show each type of algorithm and input size reflected by the color and type of line. We noted that overall, communication takes the longest with our weak scaling implementation. As expected, the 100M input size takes the longest to compute, with Radix sort being the highest, followed by Bitonic and Quicksort respectively. There is a spike in communication runtime around 15-20 processors. This is due to the structure of the network, as the fat tree communication links are being built. The point of diminishing return is reached around 30 processors, as the graphs begin to flatline.
 
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/weak/weak-comm-random.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/weak/weak-comm-reverse.png?raw=true)
@@ -169,16 +169,29 @@ Blue lines represent bitonic sort, red lines represent radix sort, and yellow li
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-total-reversed.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/strong/strong-total-sorted.png?raw=true)
 
-### GPU:
+### GPU Experimentation:
 
-Below are the plots for the total time vs # of threads for each of the different input sizes for all 3 of the sorting algorithms. We have a total of 9 graphs. Overall all the sorts look as if they were behaving in the correct manner. There were some small areas where one can spot outliers but overall the behavior of the sorting algorithms look correct.
+Below we have compared each of the different algorithms with the number of threads versus the time taken to run. Each graph is labeled with which input size it represents, as well as the input type and the runtimes being compared.  Overall, each sorting algorithm looks as if they are behaving as expected.
+
+#### Bitonic Sort
+For Bitonic Sort, we noted that when the input size is 2^16, the sorted input takes the longest, due to the computation time. This in turn increases the total time. Otherwise, the timing remains fairly consistent.  As the input sizes increase, the total time decreases as more threads are used.
 
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/gpu/gpu-bitonic-16.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/gpu/gpu-bitonic-20.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/gpu/gpu-bitonic-24.png?raw=true)
+
+#### Radix Sort
+
+Throughout all the input sizes, the trends remain fairly similar. As the number of threads increase, the time it takes to complete the computations and communication decrease. Communication times are low, while computation times for sorted and random inputs are the highest. 
+
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/gpu/gpu-radix-16.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/gpu/gpu-radix-20.png?raw=true)
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/gpu/gpu-radix-24.png?raw=true)
+
+#### Quicksort
+
+Quicksort was not efficient, as it was unable to handle large input sizes. This is due to the fact that Quicksort has not been optimized for parallelization on the GPU at this time. Since the purpose of parallelization is to work with larger problem sizes, this is not an effective algorithm. For the input size we were able to run, one can see that the time increases as the number of threads increases, and computations have the highest runtimes. Since the communication times are small, the total time and computation time are basically the same value, and therefore the lines on the graph overlap to where only computation time is visible.
+
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/gpu/gpu-quicksort-16.png?raw=true)
 
 ## 5. _due 12/1_ Presentation, 5 min + questions
