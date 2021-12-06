@@ -179,10 +179,7 @@ Quicksort was not efficient, as it was unable to handle large input sizes. This 
 
 ![alt text](https://github.tamu.edu/altamashali/csce435project/blob/master/graphs/gpu/gpu-quicksort-16.png?raw=true)
 
-## 5. _due 12/1_ Presentation, 5 min + questions
+## Final Deliverables
 
 [Link to Presentation](https://docs.google.com/presentation/d/1fNbkdVu2Ie0tsaBjLZ3Rz6JXMZGCsNaxGDqnb1Kosuk/edit?usp=sharing)
-
-## 6. _due 12/8_ Final Report
-
-[Link to Final Report](https://docs.google.com/document/d/10iN08tt-xM4xwN7D1FSMKx9e05i9fdwhPVykCVvH6iA/edit?usp=sharing)
+[Link to Report](https://docs.google.com/document/d/10iN08tt-xM4xwN7D1FSMKx9e05i9fdwhPVykCVvH6iA/edit?usp=sharing)
